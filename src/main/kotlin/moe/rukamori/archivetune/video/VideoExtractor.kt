@@ -1,12 +1,9 @@
 package moe.rukamori.archivetune.video
 
-import android.util.Log
-import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.StreamInfo
 
 object VideoExtractor {
-    private const val TAG = "VideoExtractor"
 
     suspend fun getVideoUrl(videoId: String): String? {
         return try {
@@ -21,7 +18,6 @@ object VideoExtractor {
             
             finalStream?.url
         } catch (e: Exception) {
-            Log.e(TAG, "Gagal ambil video $videoId: ${e.message}")
             null
         }
     }
