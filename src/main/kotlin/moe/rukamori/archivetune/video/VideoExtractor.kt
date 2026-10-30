@@ -1,7 +1,9 @@
 package moe.rukamori.archivetune.video
 
+import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.stream.StreamInfo
+import moe.rukamori.archivetune.innertube.YouTube
 
 object VideoExtractor {
 
@@ -18,6 +20,7 @@ object VideoExtractor {
             
             finalStream?.url
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }
