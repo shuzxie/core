@@ -1,7 +1,6 @@
 package moe.rukamori.archivetune.utils.cipher
 
 import android.content.Context
-import moe.rukamori.archivetune.network.AppProxyManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,7 +22,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object PipePipeNsigDecoder {
-    private const val TAG = "PipePipeNsig"
     private const val LATEST_PLAYER_URL = "https://api.pipepipe.dev/decoder/latest-player"
     private const val DECODE_URL = "https://api.pipepipe.dev/decoder/decode"
     private const val USER_AGENT = "PipePipe/4.9.0"
@@ -66,8 +64,6 @@ object PipePipeNsigDecoder {
 
     @Volatile private var cachedClient: OkHttpClient? = null
 
-    @Volatile private var cachedClientSignature: String? = null
-
     private val clientLock = Any()
 
     fun initialize(context: Context) {
@@ -79,19 +75,14 @@ object PipePipeNsigDecoder {
     }
 
     private fun client(): OkHttpClient {
-        val signature = AppProxyManager.currentSignature()
-        cachedClient?.let { if (cachedClientSignature == signature) return it }
+        cachedClient?.let { return it }
         return synchronized(clientLock) {
-            cachedClient?.let { if (cachedClientSignature == signature) return@synchronized it }
-            AppProxyManager
-                .applyTo(OkHttpClient.Builder())
+            cachedClient?.let { return@synchronized it }
+            OkHttpClient.Builder()
                 .connectTimeout(8, TimeUnit.SECONDS)
                 .readTimeout(8, TimeUnit.SECONDS)
                 .build()
-                .also {
-                    cachedClient = it
-                    cachedClientSignature = signature
-                }
+                .also { cachedClient = it }
         }
     }
 
@@ -258,7 +249,10 @@ object PipePipeNsigDecoder {
                 try {
                     val data = parseData(get(signatureRequestUrl(pid, missing))) ?: return@withContext
                     for (signature in missing) {
-                        data.optString(signature).takeIf { it.isNotEmpty() }?.let { sigCache["$pid:$signature"] = it }
+                        val sigValue: String? = data.optString(signature).takeIf { it.isNotEmpty() }
+                        if (sigValue != null) {
+                            sigCache["$pid:$signature"] = sigValue
+                        }
                     }
                 } catch (e: CancellationException) {
                     throw e
