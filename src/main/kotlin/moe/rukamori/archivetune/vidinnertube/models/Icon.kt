@@ -1,0 +1,8 @@
+package moe.rukamori.archivetune.innertube.models
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Icon(
+    val iconType: String,
+)
